@@ -4,11 +4,6 @@ import matplotlib.pyplot as plt
 import yfinance as yf
 
 ticker = "AAPL"
-# plt.figure(figsize=(10, 5))
-# plt.plot(data['Close'])
-# plt.title(f'Price Chart for {name}')
-# plt.grid()
-# plt.show()
 
 def SMABacktest(ticker, short_term_sma, long_term_sma, 
     shorts=False, start_date='2000-01-01', end_date='2020-12-31'):
