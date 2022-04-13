@@ -1,4 +1,3 @@
-from crypt import methods
 import uuid
 from flask import Flask, jsonify
 from flask_restful import Api, Resource, reqparse
@@ -13,21 +12,13 @@ try:
         TableName='users',
         KeySchema=[
             {
-                'AttributeName': 'username',
+                'AttributeName': 'uid',
                 'KeyType': 'HASH'
-            },
-            {
-                'AttributeName': 'id',
-                'KeyType': 'RANGE'
             }
         ],
         AttributeDefinitions=[
             {
-                'AttributeName': 'username',
-                'AttributeType': 'S'
-            },
-            {
-                'AttributeName': 'id',
+                'AttributeName': 'uid',
                 'AttributeType': 'S'
             }
         ],
@@ -35,7 +26,7 @@ try:
             'ReadCapacityUnits': 5,
             'WriteCapacityUnits': 5
         }
-    ).meta.client.get_waiter('table_exists').wait(TableName='wiki')
+    )#.meta.client.get_waiter('table_exists').wait(TableName='users')
 except dynamodb.exceptions.ResourceInUseException:
     pass
 
@@ -43,52 +34,68 @@ app = Flask(__name__)
 api = Api(app)
 
 class User(Resource):
-    def get(self, username):
+    # id = str(uuid.uuid4().hex)[:8]
+    # id = '123456'
+    def get(self, uid):
         try:
-            id = str(uuid.uuid4().hex)[:8]
             response = dynamodb.get_item(
                 TableName='users',
                 Key={
-                    'username': {
-                        'S': username
-                    },
-                    'id': {
-                        'S': id
+                    'uid': {
+                        'S': uid
                     }
                 }
             )
-            return {'username': response['Item']['username']['S'], 'id': response['Item']['id']['S']}, 200
+            return {'uid': response['Item']['uid']['S']}, 200
         except dynamodb.exceptions.ResourceNotFoundException:
             return {'error': 'User not found'}, 404
 
-    def post(self, username):
-        parser = reqparse.RequestParser()
-        parser.add_argument('id')
-        args = parser.parse_args()
-        id = args['id']
+    def post(self, uid):
+        # parser = reqparse.RequestParser()
+        # parser.add_argument('uid', type=str, required=True, help='id cannot be blank')
+        # args = parser.parse_args()
+        # id = args['uid']
+        print(id)
         try:
             dynamodb.put_item(
                 TableName='users',
                 Item={
-                    'username': {
-                        'S': username
-                    },
-                    'id': {
-                        'S': id
+                    'uid': {
+                        'S': uid
                     }
                 }
             )
-            return {'username': username, 'id': id}, 201
+            return {'uid': uid}, 201
+        except dynamodb.exceptions.ResourceNotFoundException:
+            return {'error': 'User not found'}, 404
+    
+    def put(self, uid): # update
+        try:
+            dynamodb.update_item(
+                TableName='users',
+                Key={
+                    'uid': {
+                        'S': uid
+                    }
+                },
+                UpdateExpression="set password = :val1",
+                ExpressionAttributeValues={
+                    ':val1': {
+                        'S': 'changed_password'
+                    }
+                },
+            )
+            return {'uid': uid}, 204
         except dynamodb.exceptions.ResourceNotFoundException:
             return {'error': 'User not found'}, 404
 
-    def delete(self, username):
+    def delete(self, uid):
         try:
             dynamodb.delete_item(
                 TableName='users',
                 Key={
-                    'username': {
-                        'S': username
+                    'uid': {
+                        'S': uid
                     }
                 }
             )
@@ -103,13 +110,13 @@ class UserList(Resource):
                 TableName='users'
             )
             for item in response['Items']:
-                return {'username': item['username']['S']}, 200
+                return {'uid': item['uid']['S']}, 200
         except dynamodb.exceptions.ResourceNotFoundException:
             return {'error': 'User not found'}, 404
 
 
-api.add_resource(User, "/user/<string:username>",
-                methods=['GET', 'POST', 'DELETE'])
+api.add_resource(User, "/user/uid=<string:uid>",
+                methods=['GET', 'POST', 'PUT', 'DELETE'])
 api.add_resource(UserList, '/users',
                 methods=['GET'])
 
