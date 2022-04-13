@@ -1,3 +1,4 @@
+from crypt import methods
 from flask import Flask, jsonify
 from flask_restful import Api, Resource, reqparse
 import boto3
@@ -100,13 +101,16 @@ class UserList(Resource):
             response = dynamodb.scan(
                 TableName='users'
             )
-            return response['Items']
+            for item in response['Items']:
+                return {'username': item['username']['S']}, 200
         except dynamodb.exceptions.ResourceNotFoundException:
             return {'error': 'User not found'}, 404
 
 
-api.add_resource(User, "/user/<string:username>")
-api.add_resource(UserList, '/users')
+api.add_resource(User, "/user/<string:username>",
+                methods=['GET', 'POST', 'DELETE'])
+api.add_resource(UserList, '/users',
+                methods=['GET'])
 
 # Driver function
 if __name__ == "__main__":
