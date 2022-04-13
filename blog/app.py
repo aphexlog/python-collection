@@ -1,4 +1,5 @@
 from crypt import methods
+import uuid
 from flask import Flask, jsonify
 from flask_restful import Api, Resource, reqparse
 import boto3
@@ -44,6 +45,7 @@ api = Api(app)
 class User(Resource):
     def get(self, username):
         try:
+            id = str(uuid.uuid4().hex)[:8]
             response = dynamodb.get_item(
                 TableName='users',
                 Key={
@@ -51,7 +53,7 @@ class User(Resource):
                         'S': username
                     },
                     'id': {
-                        'S': '123456'
+                        'S': id
                     }
                 }
             )
