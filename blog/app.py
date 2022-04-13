@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, jsonify
 from flask_restful import Api, Resource, reqparse
 import boto3
 
@@ -48,10 +48,14 @@ class User(Resource):
                 Key={
                     'username': {
                         'S': username
+                    },
+                    'password': {
+                        'S': 'testpass'
                     }
                 }
             )
-            return response['Item']
+            for key, value in response.items():
+                return jsonify(key, value)
         except dynamodb.exceptions.ResourceNotFoundException:
             return {'error': 'User not found'}, 404
 
