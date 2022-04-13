@@ -54,8 +54,8 @@ class User(Resource):
                     }
                 }
             )
-            for key, value in response.items():
-                return jsonify(key, value)
+            # return response['Item'], 200
+            return {'username': response['Item']['username']['S'], 'password': response['Item']['password']['S']}, 200
         except dynamodb.exceptions.ResourceNotFoundException:
             return {'error': 'User not found'}, 404
 
