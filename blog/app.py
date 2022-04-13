@@ -16,7 +16,7 @@ try:
                 'KeyType': 'HASH'
             },
             {
-                'AttributeName': 'password',
+                'AttributeName': 'id',
                 'KeyType': 'RANGE'
             }
         ],
@@ -26,7 +26,7 @@ try:
                 'AttributeType': 'S'
             },
             {
-                'AttributeName': 'password',
+                'AttributeName': 'id',
                 'AttributeType': 'S'
             }
         ],
@@ -50,21 +50,20 @@ class User(Resource):
                     'username': {
                         'S': username
                     },
-                    'password': {
-                        'S': 'testpass'
+                    'id': {
+                        'S': '123456'
                     }
                 }
             )
-            # return response['Item'], 200
-            return {'username': response['Item']['username']['S'], 'password': response['Item']['password']['S']}, 200
+            return {'username': response['Item']['username']['S'], 'id': response['Item']['id']['S']}, 200
         except dynamodb.exceptions.ResourceNotFoundException:
             return {'error': 'User not found'}, 404
 
     def post(self, username):
         parser = reqparse.RequestParser()
-        parser.add_argument('password')
+        parser.add_argument('id')
         args = parser.parse_args()
-        password = args['password']
+        id = args['id']
         try:
             dynamodb.put_item(
                 TableName='users',
@@ -72,12 +71,12 @@ class User(Resource):
                     'username': {
                         'S': username
                     },
-                    'password': {
-                        'S': password
+                    'id': {
+                        'S': id
                     }
                 }
             )
-            return {'username': username, 'password': password}, 201
+            return {'username': username, 'id': id}, 201
         except dynamodb.exceptions.ResourceNotFoundException:
             return {'error': 'User not found'}, 404
 
