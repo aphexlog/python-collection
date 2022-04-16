@@ -6,36 +6,12 @@ import boto3
 session = boto3.session.Session(profile_name='er')
 dynamodb = session.client('dynamodb', region_name='us-east-1')
 
-# create a table if not exists
-try:
-    dynamodb.create_table(
-        TableName='users',
-        KeySchema=[
-            {
-                'AttributeName': 'uid',
-                'KeyType': 'HASH'
-            }
-        ],
-        AttributeDefinitions=[
-            {
-                'AttributeName': 'uid',
-                'AttributeType': 'S'
-            }
-        ],
-        ProvisionedThroughput={
-            'ReadCapacityUnits': 5,
-            'WriteCapacityUnits': 5
-        }
-    )#.meta.client.get_waiter('table_exists').wait(TableName='users')
-except dynamodb.exceptions.ResourceInUseException:
-    pass
-
 app = Flask(__name__)
 api = Api(app)
 
 class User(Resource):
     # id = str(uuid.uuid4().hex)[:8]
-    # id = '123456'
+    # id = '123456's
     def get(self, uid):
         try:
             response = dynamodb.get_item(
@@ -46,7 +22,7 @@ class User(Resource):
                     }
                 }
             )
-            return {'uid': response['Item']['uid']['S']}, 200
+            return {'uid': response['Item']['uid']['S'], 'username': response['Item']['username']['S']}, 200
         except dynamodb.exceptions.ResourceNotFoundException:
             return {'error': 'User not found'}, 404
 
@@ -69,7 +45,7 @@ class User(Resource):
         except dynamodb.exceptions.ResourceNotFoundException:
             return {'error': 'User not found'}, 404
     
-    def put(self, uid): # update
+    def put(self, uid, ):
         try:
             dynamodb.update_item(
                 TableName='users',
@@ -102,7 +78,7 @@ class User(Resource):
             return '', 204
         except dynamodb.exceptions.ResourceNotFoundException:
             return {'error': 'User not found'}, 404
-        
+
 class UserList(Resource):
     def get(self):
         try:
