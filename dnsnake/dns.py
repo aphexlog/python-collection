@@ -1,4 +1,8 @@
+import args
 import whois # pip install python-whois
+
+args = args.main()
+domain = args.domain
 
 def whois_domain(domain):
     try:
@@ -7,7 +11,7 @@ def whois_domain(domain):
     except:
         return None
 
-main = whois_domain('google.com')
+main = whois_domain(domain)
 
 if main:
     print(main)
