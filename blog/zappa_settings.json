@@ -1,0 +1,10 @@
+{
+    "dev": {
+        "app_function": "app.app",
+        "aws_region": "us-west-2",
+        "profile_name": "er",
+        "project_name": "blog",
+        "runtime": "python3.9",
+        "s3_bucket": "zappa-xi0187myg"
+    }
+}
